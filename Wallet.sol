@@ -9,15 +9,20 @@ contract Wallet {
         tvm.accept();
     }
 
-    // модификатор, подтверждающий сообщения, принадлежащие только владельцу кошелька
+    // модификатор, который подтверждает сообщения только от владельца кошелька
     modifier checkOwnerAndAccept {
         require(msg.pubkey() == tvm.pubkey(), 100);
-		tvm.accept();
-		_;
-	}
+        tvm.accept();
+        _;
+    }
 
     // функция для отправки средств без оплаты комиссии за свой счёт
     function sendValueWithoutCommission(address dest, uint128 value) public pure checkOwnerAndAccept {
-        dest.transfer(value, true, 0);
+        dest.transfer(value, true, 0);  // flag = 0 (forward fee is subtracted from parameter value)
+    }
+
+    // функция для отправки средств с оплатой комиссии за свой счёт
+    function sendValueWithCommission(address dest, uint128 value) public pure checkOwnerAndAccept {
+        dest.transfer(value, true, 1);  //  flag = 1 (sender pays transfer fees separately from contract's balance)
     }
 }
